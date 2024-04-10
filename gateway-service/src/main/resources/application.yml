@@ -1,0 +1,29 @@
+server:
+  port: 9090
+
+eureka:
+  instance:
+    hostname: localhost
+
+spring:
+  application:
+    name: API-GATEWAY-SERVICE
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/product/**
+        - id: OrderService
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order/**
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} %m%n"

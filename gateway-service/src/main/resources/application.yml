@@ -1,7 +1,6 @@
 server:
   port: 9090
 
-
 eureka:
   instance:
     hostname: localhost
@@ -19,13 +18,21 @@ spring:
         - id: product-service
           uri: lb://product-service
           predicates:
-            - Path=/api/product/**
-        - id: OrderService
+            - Path=/route/api/product/**
+          filters:
+            - AuthenticationFilter
+
+        - id: order-service
           uri: lb://order-service
           predicates:
             - Path=/api/order/**
+          filters:
+            - AuthenticationFilter
 
-
+        - id: security-service
+          uri: lb://security-service
+          predicates:
+            - Path=/auth/**
 
 logging:
   pattern:

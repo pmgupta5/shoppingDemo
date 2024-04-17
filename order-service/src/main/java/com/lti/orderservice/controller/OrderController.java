@@ -29,12 +29,7 @@ public class OrderController {
     @GetMapping("/callProductService")
     public Mono<String> callProductService() {
         LOGGER.info("Inside Order-->callProductService()");
-        /*return webClient.get()
-                .uri("/api/product/")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .retrieve()
-                .bodyToMono(String.class);*/
-       return webClientBuilder.build()
+        return webClientBuilder.build()
                 .get()
                 .uri("http://product-service/api/product/")
                 .retrieve()

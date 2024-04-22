@@ -15,7 +15,7 @@ public class SecurityService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     JwtUtil jwtUtil;
-    public List<UserCredential> userCredentialList= new ArrayList<>();
+    private List<UserCredential> userCredentialList= new ArrayList<>();
 
     public Optional<UserCredential> findByName(String username){
        return userCredentialList

@@ -14,8 +14,8 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     @ExceptionHandler(ProductException.class)
-    public ResponseEntity<?> handleSecurityException(ProductException ex){
-        LOGGER.error("error: {}", ex);
+    public ResponseEntity<Object> handleSecurityException(ProductException ex){
+        LOGGER.error("error: {}", (Object) ex.getStackTrace());
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("error message", ex.getMessage());
         errorMap.put("status", HttpStatus.BAD_REQUEST.toString());
@@ -23,8 +23,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleRuntimeException(RuntimeException runtimeException){
-        LOGGER.error("error: {}", runtimeException);
+    public ResponseEntity<Object> handleRuntimeException(RuntimeException runtimeException){
+        LOGGER.error("error: {}", (Object) runtimeException.getStackTrace());
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("error message", runtimeException.getMessage());
         errorMap.put("status", HttpStatus.EXPECTATION_FAILED.toString());

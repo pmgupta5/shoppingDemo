@@ -1,6 +1,5 @@
 package com.lti.orderservice.service;
 
-import com.lti.orderservice.controller.OrderController;
 import com.lti.orderservice.exception.OrderException;
 import com.lti.orderservice.model.Order;
 import com.lti.orderservice.model.Product;
@@ -11,16 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService{
 
+    public static final String FAILED_TO_UPDATE_PRODUCT_INVENTORY = "Failed to update product Inventory";
+    public static final String CASH = "CASH";
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
+    public static final String NEW = "NEW";
+    public static final String CANCELLED = "CANCELLED";
 
     @Autowired
     RestTemplate restTemplate;
@@ -44,11 +43,13 @@ public class OrderServiceImpl implements OrderService{
         validateProductListAndUpdateInventory(productList);
         Order newOrder= new Order();
         newOrder.setOrderId(orderIdCounter++);
-        newOrder.setOrderStatus("NEW");
+        newOrder.setOrderStatus(NEW);
+        newOrder.setPaymentType(CASH);
         newOrder.setCustomerName(customerName);
         newOrder.setProductList(productList);
         newOrder.setTotalBillAmount(calTotalAmountForProductList(productList));
         masterOrderList.add(newOrder);
+
         return newOrder;
     }
     public boolean validateProductListAndUpdateInventory(List<Product> productList){
@@ -67,10 +68,11 @@ public class OrderServiceImpl implements OrderService{
         });
 
         if(!callProductApiToAddProductintoCart(productList)){
-            throw new OrderException("Failed to update product Inventory");
+            throw new OrderException(FAILED_TO_UPDATE_PRODUCT_INVENTORY);
         }
 
         return true;
+
     }
     public Double calTotalAmountForProductList(List<Product> productList){
        return productList
@@ -126,9 +128,8 @@ public class OrderServiceImpl implements OrderService{
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://PRODUCT-SERVICE/api/product/addProductToCart", productList, String.class);
         LOGGER.info("HTTP Status: {}", responseEntity.getStatusCode());
         LOGGER.info("Response Body: {}", responseEntity.getBody());
-        if(Objects.nonNull(responseEntity.getBody()) &&
-                !responseEntity.getBody().contains("SUCCESS")){
-            throw new OrderException("Failed to update product Inventory");
+        if(null != responseEntity.getBody() && !"SUCCESS".contains(responseEntity.getBody())){
+            throw new OrderException(FAILED_TO_UPDATE_PRODUCT_INVENTORY);
         }
         return true;
     }
@@ -138,8 +139,8 @@ public class OrderServiceImpl implements OrderService{
         LOGGER.info("HTTP Status: {}", responseEntity.getStatusCode());
         LOGGER.info("Response Body: {}", responseEntity.getBody());
         if(Objects.nonNull(responseEntity.getBody()) &&
-                !responseEntity.getBody().contains("SUCCESS")){
-            throw new OrderException("Failed to update product Inventory");
+                !"SUCCESS".contains(responseEntity.getBody())){
+            throw new OrderException(FAILED_TO_UPDATE_PRODUCT_INVENTORY);
         }
         return true;
     }
@@ -151,7 +152,7 @@ public class OrderServiceImpl implements OrderService{
     public boolean isOrderStatusValidToAddProduct(Long orderId){
         return masterOrderList.stream().anyMatch(o ->
                 Objects.equals(orderId, o.getOrderId())
-                && Objects.equals("NEW", o.getOrderStatus())
+                && Objects.equals(NEW, o.getOrderStatus())
         );
     }
     public Order addNewProductIntoOrder(List<Product> newProductList, Order existingOrder){
@@ -200,7 +201,7 @@ public class OrderServiceImpl implements OrderService{
 
         //if product exist but not valid quantity then reject request
         existingProductList.forEach(existingProduct-> deleteProductList.stream()
-                .filter(toBeDeleteProduct->toBeDeleteProduct.getProductId()==existingProduct.getProductId())
+                .filter(toBeDeleteProduct-> Objects.equals(toBeDeleteProduct.getProductId(), existingProduct.getProductId()))
                 .forEach(p-> {
                     if(existingProduct.getQuantity()<p.getQuantity())
                         throw new OrderException("Invalid Qty for given Product ID: " + existingProduct.getProductId());
@@ -228,11 +229,18 @@ public class OrderServiceImpl implements OrderService{
         //Set updated product list
         existingOrder.setProductList(updatedExistingProductList);
         existingOrder.setTotalBillAmount(calTotalAmountForProductList(updatedExistingProductList));
+
+        //CANCELLED the order if productList is empty
+        boolean cancelled= updatedExistingProductList.isEmpty();
+
         //Update master Order List
         masterOrderList.forEach(p->{
             if(Objects.equals(p.getOrderId(), existingOrder.getOrderId())){
                 p.setProductList(updatedExistingProductList);
                 p.setTotalBillAmount(existingOrder.getTotalBillAmount());
+                if(cancelled){
+                    p.setOrderStatus(CANCELLED);
+                }
             }
         });
         return existingOrder;

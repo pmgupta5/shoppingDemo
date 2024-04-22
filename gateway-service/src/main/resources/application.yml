@@ -21,6 +21,11 @@ spring:
             - Path=/api/product/**
           filters:
             - AuthenticationFilter
+#            - name: CircuitBreaker
+#              args:
+#                name: product-service
+#                fallbackUri: forward:/productServiceFallBack
+#            - name: AuthenticationFilter
 
         - id: order-service
           uri: lb://order-service
@@ -28,6 +33,11 @@ spring:
             - Path=/api/order/**
           filters:
             - AuthenticationFilter
+#            - name: CircuitBreaker
+#              args:
+#                name: order-service
+#                fallbackUri: forward:/orderServiceFallBack
+#            - name: AuthenticationFilter
 
         - id: security-service
           uri: lb://security-service

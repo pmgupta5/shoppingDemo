@@ -2,15 +2,15 @@ package com.lti.orderservice.model;
 
 public class Product {
     private Long productId;
-    private String getProductName;
+    private String productName;
     private Double price;
     private Long quantity;
 
     public Product() {
     }
-    public Product(Long productId, String getProductName, Double price, Long quantity) {
+    public Product(Long productId, String productName, Double price, Long quantity) {
         this.productId = productId;
-        this.getProductName = getProductName;
+        this.productName = productName;
         this.price = price;
         this.quantity = quantity;
     }
@@ -23,12 +23,12 @@ public class Product {
         this.productId = productId;
     }
 
-    public String getGetProductName() {
-        return getProductName;
+    public String getProductName() {
+        return productName;
     }
 
-    public void setGetProductName(String getProductName) {
-        this.getProductName = getProductName;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public Double getPrice() {
@@ -45,5 +45,15 @@ public class Product {
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                '}';
     }
 }

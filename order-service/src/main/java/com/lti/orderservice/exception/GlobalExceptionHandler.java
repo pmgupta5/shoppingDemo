@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     @ExceptionHandler(OrderException.class)
     public ResponseEntity<Object> handleSecurityException(OrderException ex){
-        LOGGER.error("error: {}", ex);
+        LOGGER.error("error: {}", (Object) ex.getStackTrace());
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("error message", ex.getMessage());
         errorMap.put("status", HttpStatus.BAD_REQUEST.toString());
@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Object> handleRuntimeException(RuntimeException runtimeException){
-        LOGGER.error("error: {}", runtimeException);
+        LOGGER.error("error: {}", (Object) runtimeException.getStackTrace());
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("error message", runtimeException.getMessage());
         errorMap.put("status", HttpStatus.EXPECTATION_FAILED.toString());
